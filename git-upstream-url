@@ -1,0 +1,54 @@
+#!/usr/bin/env python3
+
+import re
+import sys
+import argparse
+
+def get_base_url(remote):
+    if remote.startswith("git@github.com:"):
+        match = re.search(r"^git@github.com:(.+)/(.+)(\.git)?$", remote)
+        if not match: sys.exit(f"did not match GitHub SSH remote: {remote}")
+        return f"https://github.com/{match.group(1)}/{match.group(2)}", "github"
+
+    elif remote.startswith("git@bitbucket.org:"):
+        match = re.search(r"^git@bitbucket.org:(.+)/(.+)(\.git)?$", remote)
+        if not match: sys.exit(f"did not match Bitbucket SSH remote: {remote}")
+        return f"https://bitbucket.org/{match.group(1)}/{match.group(2)}", "bitbucket"
+
+    elif remote.startswith("https://github.com/"):
+        match = re.search(r"^https://github.com/(.+)/(.+)(\.git)?$", remote)
+        if not match: sys.exit(f"did not match GitHub HTTPS remote: {remote}")
+        return f"https://bitbucket.com/{match.group(1)}/{match.group(2)}", "github"
+
+    elif remote.startswith("https://bitbucket.com/"):
+        match = re.search(r"^https://bitbucket.com/(.+)/(.+)(\.git)?$", remote)
+        if not match: sys.exit(f"did not match Bitbucket HTTPS remote: {remote}")
+        return f"https://bitbucket.com/{match.group(1)}/{match.group(2)}", "bitbucket"
+
+    else:
+        sys.exit(f"unknown URL format: {remote}")
+
+parser = argparse.ArgumentParser()
+parser.add_argument("type", nargs="?", default="repo", choices=["repo", "new-pr"])
+parser.add_argument("--remote")
+parser.add_argument("--branch")
+args = parser.parse_args()
+
+if args.remote is None or len(args.remote) <= 0:
+    sys.exit("must specify a remote URL")
+
+base_url, service = get_base_url(args.remote)
+
+if args.type == "repo":
+    url = base_url
+elif args.type == "new-pr":
+    if service == "github":
+        url = base_url + f"/pull/new/{args.branch}"
+    elif service == "bitbucket":
+        url = base_url + f"/pull-requests/new?source={args.branch}"
+    else:
+        sys.exit("unknown hosting service: " + service)
+else:
+    sys.exit("unknown URL type: " + args.type)
+
+sys.stdout.write(url + "\n")

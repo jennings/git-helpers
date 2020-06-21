@@ -15,7 +15,7 @@ if args.remote is None or len(args.remote) <= 0:
 
 repo = parse_remote_url(args.remote)
 
-if args.type == "repo":
+if args.type == "home" or args.type == "repo":
     url = repo.home_url
 elif args.type == "new-pr":
     url = repo.new_pr(args.branch)

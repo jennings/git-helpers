@@ -1,4 +1,4 @@
-TEST_FILES := *_test.py
+TEST_FILES := $(wildcard *_test.py)
 
 .PHONY: all
 all: test

@@ -12,6 +12,8 @@ class Repo:
             return self.home_url + "/pull/new/" + branch
         elif self.service == "bitbucket":
             return self.home_url + "/pull-requests/new?source=" + branch
+        elif self.service == "azuredevops":
+            return f"{self.home_url}/pullrequestcreate?sourceRef={branch}"
         else:
             return None
 
@@ -22,6 +24,14 @@ def parse_remote_url(remote):
         return Repo(
             f"https://github.com/{match.group(1)}/{match.group(2)}",
             "github"
+        )
+
+    elif remote.startswith("git@ssh.dev.azure.com:"):
+        match = re.search(r"^git@ssh.dev.azure.com:v3/(.+)/(.+)/(.*?)(?:\.git)?(/|$)", remote)
+        if not match: sys.exit(f"did not match Azure DevOps SSH remote: {remote}")
+        return Repo(
+            f"https://dev.azure.com/{match.group(1)}/{match.group(2)}/_git/{match.group(3)}",
+            "azuredevops"
         )
 
     elif remote.startswith("git@bitbucket.org:"):

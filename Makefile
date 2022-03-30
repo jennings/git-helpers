@@ -9,5 +9,11 @@ test:
 
 .PHONY: install
 install:
+
+ifeq ($(OS),Windows_NT)
+	-mkdir %USERPROFILE%\bin
+	echo >%USERPROFILE%\bin\git-upstream-url.cmd @python3 $(CURDIR)\git-upstream-url
+else
 	mkdir -p "${HOME}/bin"
 	ln -fs "$(shell pwd)/git-upstream-url" "${HOME}/bin/git-upstream-url"
+endif
